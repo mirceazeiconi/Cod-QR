@@ -64,6 +64,180 @@ def train_model(X, y):
     clf.fit(X, y)
     return clf
 
+```
+## rezultate_sandboxuri.json
 
-
-
+```json 
+{
+    "Cuckoo": {
+        "score": 10,
+        "signatures": [
+            "Creează cheie de autorun în registru",
+            "Își copiează fișierul în directorul de start",
+            "Contactează server de comandă și control (C2)"
+        ],
+        "network": {
+            "hosts": [
+                "45.67.89.123"
+            ],
+            "domains": [
+                "malicious.example.com"
+            ],
+            "http": [
+                {
+                    "host": "malicious.example.com",
+                    "uri": "/payload",
+                    "method": "GET"
+                }
+            ]
+        },
+        "files": [
+            "C:\\Users\\victim\\AppData\\Roaming\\malware.exe",
+            "C:\\Users\\victim\\AppData\\Local\\Temp\\tmp123.tmp"
+        ],
+        "registry": [
+            "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\MalwareStub"
+        ],
+        "processes": [
+            {
+                "process_name": "malware.exe",
+                "pid": 1234,
+                "children": [
+                    {
+                        "process_name": "cmd.exe",
+                        "pid": 5678,
+                        "command_line": "cmd.exe /c vssadmin Delete Shadows /all /quiet"
+                    },
+                    {
+                        "process_name": "svchost.exe",
+                        "pid": 910,
+                        "injected": true
+                    }
+                ]
+            }
+        ]
+    },
+    "ANYRUN": {
+        "score": 100,
+        "network": {
+            "domains": [
+                "malicious.example.com"
+            ],
+            "connections": [
+                "45.67.89.123:80 (HTTP)",
+                "45.67.89.123:443 (HTTPS)"
+            ]
+        },
+        "files": {
+            "created": [
+                "C:\\Users\\victim\\AppData\\Roaming\\malware.exe"
+            ],
+            "deleted": [
+                "C:\\Users\\victim\\Downloads\\mostra_malware.exe"
+            ]
+        },
+        "registry": {
+            "modified": [
+                "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\MalwareStub"
+            ]
+        },
+        "processes": {
+            "main": "malware.exe (PID 1234)",
+            "children": [
+                "cmd.exe (PID 5678) -> vssadmin.exe",
+                "svchost.exe (PID 910) (proces legitimat țintă injecție)"
+            ]
+        }
+    },
+    "JoeSandbox": {
+        "score": 95,
+        "network": {
+            "contacts": [
+                "malicious.example.com (45.67.89.123)",
+                "DNS request for malicious.example.com"
+            ]
+        },
+        "files": {
+            "dropped": [
+                "C:\\Users\\victim\\AppData\\Roaming\\malware.exe",
+                "C:\\Users\\victim\\AppData\\Local\\Temp\\config.dat"
+            ]
+        },
+        "registry": {
+            "added": [
+                "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run\\MalwareStub"
+            ]
+        },
+        "processes": {
+            "tree": "malware.exe -> cmd.exe (vssadmin) -> svchost.exe (injectat)"
+        },
+        "signatures": [
+            "Executes OS command via cmd.exe",
+            "Modifies registry for persistence",
+            "Network communication to malicious host"
+        ],
+        "family": "AgentTesla (suspectat)"
+    },
+    "HybridAnalysis": {
+        "threat_score": 100,
+        "verdict": "Malicious",
+        "network": {
+            "domains_contacted": [
+                "malicious.example.com"
+            ],
+            "hosts": [
+                "45.67.89.123"
+            ]
+        },
+        "file_changes": {
+            "created": [
+                "C:\\Users\\victim\\AppData\\Roaming\\malware.exe"
+            ],
+            "deleted": [
+                "mostra_malware.exe (original)"
+            ]
+        },
+        "processes": {
+            "process_tree": "malware.exe (PID 1234) -> cmd.exe (PID 5678) -> vssadmin.exe; malware.exe -> svchost.exe (injection)"
+        },
+        "classification": "Trojan/Stealer"
+    },
+    "Triage": {
+        "score": 9,
+        "analysis_summary": {
+            "threat_level": "high",
+            "duration": 60
+        },
+        "network": {
+            "indicators": [
+                "malicious.example.com (DNS and HTTP GET)",
+                "45.67.89.123:80"
+            ]
+        },
+        "files": {
+            "created": [
+                "C:\\Users\\victim\\AppData\\Roaming\\malware.exe",
+                "C:\\Users\\victim\\AppData\\Local\\Temp\\config.dat"
+            ],
+            "deleted": [
+                "C:\\Users\\victim\\Downloads\\mostra_malware.exe"
+            ]
+        },
+        "processes": {
+            "tree": [
+                "malware.exe (1234)",
+                "|__ cmd.exe (5678) [execută vssadmin]",
+                "|__ svchost.exe (910) [cod malițios injectat]"
+            ]
+        },
+        "signatures": [
+            "network_c2_contact",
+            "persistence_registry_run",
+            "code_injection_remote_process"
+        ],
+        "family": "AgentTesla"
+    },
+    "Detux": {
+        "error": "Format de fișier nesuportat - analiza Linux nu a putut rula fișier executabil Windows"
+    }
+}
